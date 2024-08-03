@@ -1,0 +1,61 @@
+#!/bin/bash -l
+#SBATCH --nodes=16
+#SBATCH --ntasks-per-node=20
+#SBATCH --time=00:05:00
+#SBATCH --export=NONE
+#SBATCH --job-name=cgsolve
+unset SLURM_EXPORT_ENV
+
+# ===========================================================
+
+# Assignment:
+# ! WEAK SCALING:
+#   --nodes=1,2,3,4,6,8,12,16
+#   --ntasks-per-node=20
+# ! STRONG SCALING:
+#   --nodes=1
+#   --ntasks-per-node=1,2,5,10,20
+
+# ===========================================================
+
+# set project path
+PROJECT="/home/hpc/vlwr/vlwr101h/MPI+Bonus/MPI+Bonus/"
+
+# set relative executable path
+CGSOLVE="./cgsolve"
+
+# set parameters
+N0=18000 # number of gridpoints in each direction for --nodes=1
+ITER=4   # number of iterations
+A=1      # NX = A*N0
+B=1      # NY = B*N0
+
+# ===========================================================
+
+# adjust A and B for weak scaling
+case $SLURM_JOB_NUM_NODES in
+    2)  A=2 ; B=1 ;;
+    3)  A=3 ; B=1 ;;
+    4)  A=2 ; B=2 ;;
+    6)  A=2 ; B=3 ;;
+    8)  A=2 ; B=4 ;;
+    12) A=3 ; B=4 ;;
+    16) A=4 ; B=4 ;;
+esac
+
+NX=$(($N0 * $A))
+NY=$(($N0 * $B))
+
+# ===========================================================
+
+echo "=================================================================="
+echo "Number of MPI-Processes: ${SLURM_NTASKS}"
+echo "Number of grid points: ${NX} x ${NY}"
+echo ""
+
+# change to project dir
+cd ${PROJECT}
+# execute program
+srun ${CGSOLVE} ${NX} ${NY} ${ITER} 0 # you may put additional args here
+
+echo "=================================================================="

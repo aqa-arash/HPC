@@ -1,0 +1,3 @@
+unset key
+set pm3d at s depthorder hidden3d
+splot 'solution.txt' u 1:2:3 w l lc rgb "#aa000000"
